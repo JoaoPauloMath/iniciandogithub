@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercícios de Xadrez - Treine suas habilidades</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Grid de exercícios */
+        .exercises-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .exercise-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .exercise-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .exercise-card.completed {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .exercise-card.completed .exercise-title,
+        .exercise-card.completed .exercise-desc {
+            color: white;
+        }
+
+        .exercise-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .exercise-desc {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .difficulty.easy { background: #4caf50; color: white; }
+        .difficulty.medium { background: #ff9800; color: white; }
+        .difficulty.hard { background: #f44336; color: white; }
+
+        .checkbox {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .btn-show-board {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .btn-show-board:hover {
+            background: #45a049;
+        }
+
+        /* Tabuleiro interativo */
+        .board-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 30px;
+        }
+
+        .board-section h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .chess-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            max-width: 500px;
+            margin: 0 auto;
+            border: 2px solid #333;
+        }
+
+        .square {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .square.white {
+            background-color: #f0d9b5;
+        }
+
+        .square.black {
+            background-color: #b58863;
+        }
+
+        .square.selected {
+            background-color: #7b9c4e;
+            box-shadow: inset 0 0 0 3px #ffd700;
+        }
+
+        .square.valid-move {
+            background-color: #4caf50;
+            opacity: 0.6;
+        }
+
+        .board-controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .board-controls button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .board-controls button:hover {
+            background: #764ba2;
+        }
+
+        .feedback {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .feedback.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .feedback.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 15px;
+            color: #4caf50;
+        }
+
+        .modal-content button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .square {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>♟️ Exercícios de Xadrez ♞</h1>
+            <p>Complete os exercícios e pratique suas habilidades enxadrísticas!</p>
+        </div>
+
+        <div class="exercises-grid" id="exercisesGrid"></div>
+
+        <div class="board-section" id="boardSection" style="display: none;">
+            <h2>📋 Tabuleiro Interativo</h2>
+            <div id="chessBoard" class="chess-board"></div>
+            <div class="board-controls">
+                <button onclick="resetBoard()">↺ Reiniciar Posição</button>
+                <button onclick="closeBoard()">✖ Fechar Tabuleiro</button>
+            </div>
+            <div id="feedback" class="feedback"></div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3>🎉 Parabéns!</h3>
+            <p id="modalMessage"></p>
+            <button onclick="closeModal()">Continuar</button>
+        </div>
+    </div>
+
+    <script>
+        // Lista de exercícios
+        const exercises = [
+            {
+                id: 1,
+                title: "Mate em 1 - Torre e Rei",
+                description: "Coloque o rei adversário em xeque-mate usando apenas a torre.",
+                difficulty: "easy",
+                completed: false,
+                position: {
+                    pieces: {
+                        "a1": "♖", // Torre branca
+                        "e8": "♔", // Rei preto
+                        "e1": "♚"  // Rei branco
+                    },
+                    currentPlayer: "white",
+                    objective: "Dê xeque-mate movendo a torre para uma casa que ataque o rei preto sem que ele possa escapar"
+                }
+            },
+            {
+                id: 2,
+                title: "Captura com Cavalo",
+                description: "Capture a torre adversária usando o cavalo em um único movimento.",
+                difficulty: "medium",
+                completed: false,
+                position: {
+                    pieces: {
+                        "b1": "♞", // Cavalo branco
+                        "c3": "♜", // Torre preta
+                        "e1": "♚", // Rei branco
+                        "e8": "♔"  // Rei preto
+                    },
+                    currentPlayer: "white",
+                    objective: "Capture a torre preta na casa c3 com o cavalo"
+                }
+            },
+            {
+                id: 3,
+                title: "Bispo na Diagonal",
+                description: "Mova o bispo para controlar a diagonal principal.",
+                difficulty: "easy",
+                completed: false,
+                position: {
+                    pieces: {
+                        "c1": "♝", // Bispo branco
+                        "e1": "♚", // Rei branco
+                        "e8": "♔"  // Rei preto
+                    },
+                    currentPlayer: "white",
+                    objective: "Posicione o bispo na casa que ataque o máximo de peças"
+                }
+            },
+            {
+                id: 4,
+                title: "Rainha Poderosa",
+                description: "Use a rainha para dar xeque no rei adversário.",
+                difficulty: "medium",
+                completed: false,
+                position: {
+                    pieces: {
+                        "d1": "♛", // Rainha branca
+                        "e1": "♚", // Rei branco
+                        "e8": "♔"  // Rei preto
+                    },
+                    currentPlayer: "white",
+                    objective: "Dê xeque no rei preto com a rainha"
+                }
+            },
+            {
+                id: 5,
+                title: "Defesa do Peão",
+                description: "Proteja seu peão com outra peça.",
+                difficulty: "hard",
+                completed: false,
+                position: {
+                    pieces: {
+                        "e2": "♟", // Peão branco
+                        "e1": "♚", // Rei branco
+                        "d3": "♞", // Cavalo branco
+                        "e8": "♔"  // Rei preto
+                    },
+                    currentPlayer: "white",
+                    objective: "Mova o cavalo para proteger o peão contra a captura"
+                }
+            }
+        ];
+
+        let currentExercise = null;
+        let selectedSquare = null;
+        let currentBoard = {};
+        let currentPosition = null;
+
+        function renderExercises() {
+            const grid = document.getElementById('exercisesGrid');
+            grid.innerHTML = exercises.map(exercise => `
+                <div class="exercise-card ${exercise.completed ? 'completed' : ''}" onclick="openExercise(${exercise.id})">
+                    <div class="exercise-title">
+                        <span>${exercise.title}</span>
+                        ${exercise.completed ? '✓' : ''}
+                    </div>
+                    <div class="difficulty ${exercise.difficulty}">${exercise.difficulty === 'easy' ? 'Fácil' : exercise.difficulty === 'medium' ? 'Médio' : 'Difícil'}</div>
+                    <div class="exercise-desc">${exercise.description}</div>
+                    <button class="btn-show-board" onclick="event.stopPropagation(); openExercise(${exercise.id})">
+                        🎯 Praticar Exercício
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function openExercise(exerciseId) {
+            currentExercise = exercises.find(e => e.id === exerciseId);
+            if (!currentExercise) return;
+
+            currentPosition = JSON.parse(JSON.stringify(currentExercise.position));
+            currentBoard = currentPosition.pieces;
+            selectedSquare = null;
+            
+            renderChessBoard();
+            document.getElementById('boardSection').style.display = 'block';
+            document.getElementById('feedback').innerHTML = '';
+            document.getElementById('feedback').className = 'feedback';
+            
+            // Scroll para o tabuleiro
+            document.getElementById('boardSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderChessBoard() {
+            const boardElement = document.getElementById('chessBoard');
+            boardElement.innerHTML = '';
+            
+            const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            
+            for (let row = 8; row >= 1; row--) {
+                for (let col = 0; col < 8; col++) {
+                    const file = files[col];
+                    const square = `${file}${row}`;
+                    const piece = currentBoard[square] || '';
+                    const isWhite = (row + col) % 2 === 0;
+                    const isSelected = selectedSquare === square;
+                    
+                    const squareDiv = document.createElement('div');
+                    squareDiv.className = `square ${isWhite ? 'white' : 'black'}`;
+                    if (isSelected) squareDiv.classList.add('selected');
+                    squareDiv.textContent = piece;
+                    squareDiv.onclick = () => handleSquareClick(square);
+                    
+                    boardElement.appendChild(squareDiv);
+                }
+            }
+        }
+
+        function handleSquareClick(square) {
+            if (!currentExercise) return;
+            
+            // Se não há peça selecionada e a casa tem uma peça do jogador atual
+            if (!selectedSquare && currentBoard[square]) {
+                selectedSquare = square;
+                renderChessBoard();
+                return;
+            }
+            
+            // Se há uma peça selecionada
+            if (selectedSquare) {
+                const from = selectedSquare;
+                const to = square;
+                const piece = currentBoard[from];
+                
+                if (piece && isValidMove(from, to, piece)) {
+                    // Executa o movimento
+                    const capturedPiece = currentBoard[to];
+                    currentBoard[to] = piece;
+                    delete currentBoard[from];
+                    
+                    renderChessBoard();
+                    selectedSquare = null;
+                    
+                    // Verifica se completou o exercício
+                    checkExerciseCompletion(piece, from, to, capturedPiece);
+                } else {
+                    showFeedback('Movimento inválido! Tente novamente.', 'error');
+                    selectedSquare = null;
+                    renderChessBoard();
+                }
+            }
+        }
+
+        function isValidMove(from, to, piece) {
+            // Validação básica de movimento (simplificada para os exercícios)
+            const fromFile = from.charCodeAt(0);
+            const fromRank = parseInt(from[1]);
+            const toFile = to.charCodeAt(0);
+            const toRank = parseInt(to[1]);
+            
+            const fileDiff = Math.abs(toFile - fromFile);
+            const rankDiff = Math.abs(toRank - fromRank);
+            
+            // Torre (♖)
+            if (piece === '♖' || piece === '♜') {
+                return (fromFile === toFile || fromRank === toRank);
+            }
+            
+            // Cavalo (♞)
+            if (piece === '♞') {
+                return (fileDiff === 2 && rankDiff === 1) || (fileDiff === 1 && rankDiff === 2);
+            }
+            
+            // Bispo (♝)
+            if (piece === '♝') {
+                return fileDiff === rankDiff;
+            }
+            
+            // Rainha (♛)
+            if (piece === '♛') {
+                return (fromFile === toFile || fromRank === toRank || fileDiff === rankDiff);
+            }
+            
+            // Rei (♚)
+            if (piece === '♚') {
+                return fileDiff <= 1 && rankDiff <= 1;
+            }
+            
+            // Peão (♟)
+            if (piece === '♟') {
+                // Movimento para frente (branco sobe)
+                if (toRank === fromRank + 1 && toFile === fromFile && !currentBoard[to]) {
+                    return true;
+                }
+                // Captura diagonal
+                if (toRank === fromRank + 1 && Math.abs(toFile - fromFile) === 1 && currentBoard[to]) {
+                    return true;
+                }
+                return false;
+            }
+            
+            return false;
+        }
+
+        function checkExerciseCompletion(piece, from, to, capturedPiece) {
+            let completed = false;
+            let message = '';
+            
+            switch(currentExercise.id) {
+                case 1: // Mate em 1
+                    if ((piece === '♖' || piece === '♜') && 
+                        currentBoard['e8'] === '♔' && 
+                        (to === 'e8' || (Math.abs(to.charCodeAt(0) - 'e'.charCodeAt(0)) <= 1 && 
+                         Math.abs(parseInt(to[1]) - 8) <= 1))) {
+                        completed = true;
+                        message = 'Excelente! Você deu xeque-mate com a torre! 🎯';
+                    }
+                    break;
+                    
+                case 2: // Captura com Cavalo
+                    if (piece === '♞' && capturedPiece === '♜' && to === 'c3') {
+                        completed = true;
+                        message = 'Perfeito! Você capturou a torre com o cavalo! 🏆';
+                    }
+                    break;
+                    
+                case 3: // Bispo na diagonal
+                    if (piece === '♝') {
+                        completed = true;
+                        message = 'Ótimo! O bispo está controlando a diagonal! 🌟';
+                    }
+                    break;
+                    
+                case 4: // Rainha poderosa
+                    if (piece === '♛' && currentBoard['e8'] === '♔' && 
+                        (Math.abs(to.charCodeAt(0) - 'e'.charCodeAt(0)) <= 1 && 
+                         Math.abs(parseInt(to[1]) - 8) <= 1)) {
+                        completed = true;
+                        message = 'Impressionante! A rainha deu xeque! 👑';
+                    }
+                    break;
+                    
+                case 5: // Defesa do peão
+                    if (piece === '♞' && 
+                        ((to === 'e3' && currentBoard['e2'] === '♟') || 
+                         (to === 'f3' && currentBoard['e2'] === '♟') ||
+                         (to === 'd3' && currentBoard['e2'] === '♟'))) {
+                        completed = true;
+                        message = 'Excelente defesa! O peão está protegido! 🛡️';
+                    }
+                    break;
+            }
+            
+            if (completed) {
+                currentExercise.completed = true;
+                localStorage.setItem('chessExercises', JSON.stringify(exercises));
+                renderExercises();
+                showModal(message);
+                showFeedback(message, 'success');
+            } else {
+                showFeedback('Continue tentando! ' + currentExercise.objective, 'error');
+            }
+        }
+
+        function resetBoard() {
+            if (currentExercise) {
+                currentBoard = JSON.parse(JSON.stringify(currentExercise.position.pieces));
+                selectedSquare = null;
+                renderChessBoard();
+                showFeedback('Posição reiniciada! Tente novamente.', 'success');
+            }
+        }
+
+        function closeBoard() {
+            document.getElementById('boardSection').style.display = 'none';
+            selectedSquare = null;
+            currentExercise = null;
+        }
+
+        function showFeedback(message, type) {
+            const feedbackDiv = document.getElementById('feedback');
+            feedbackDiv.textContent = message;
+            feedbackDiv.className = `feedback ${type}`;
+            
+            setTimeout(() => {
+                if (feedbackDiv.className === `feedback ${type}`) {
+                    feedbackDiv.innerHTML = '';
+                    feedbackDiv.className = 'feedback';
+                }
+            }, 3000);
+        }
+
+        function showModal(message) {
+            const modal = document.getElementById('modal');
+            const modalMessage = document.getElementById('modalMessage');
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // Carregar progresso salvo
+        function loadProgress() {
+            const saved = localStorage.getItem('chessExercises');
+            if (saved) {
+                const savedExercises = JSON.parse(saved);
+                savedExercises.forEach(savedEx => {
+                    const exercise = exercises.find(e => e.id === savedEx.id);
+                    if (exercise) exercise.completed = savedEx.completed;
+                });
+            }
+            renderExercises();
+        }
+
+        // Inicializar
+        loadProgress();
+        
+        // Fechar modal ao clicar fora
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>
